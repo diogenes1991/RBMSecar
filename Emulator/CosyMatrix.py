@@ -1,6 +1,6 @@
 from lookup import lookup
 
-class CozyMatrix:
+class CosyMatrix:
     def __init__(self,path):
         file = open(path,"r")
         self.matrices = []
