@@ -20,10 +20,13 @@ class CozyMatrix:
                 local_mat = 331*[0]
             
             else:
+                ''' Build the key to lookup '''
                 word = ""
                 for i in range(3,len(vec)):
                     word+=vec[i]
+                    
                 try:
                     local_mat[lookup[word]-1] = float(vec[1])
                 except:
-                    print(word,count)     
+                    print(word,count)
+        file.close()
