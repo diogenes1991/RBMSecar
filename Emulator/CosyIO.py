@@ -29,9 +29,16 @@ class CosyIO:
     
     def __init__(self,nLetters=8,lowPower=0,highPower=4):
         
+        self.nLetters  = nLetters
+        self.lowPower  = lowPower
+        self.higiPower = highPower
+        
         ''' We generate a static lookup table to synchronize all matrices '''
         self.lookup = generate_lookup(lowPower=lowPower,highPower=highPower,nLetters=nLetters)
         self.inverse  = dict( [(self.lookup[key],key) for key in self.lookup] )
+        
+        ''' Convert keys to list of powers '''
+        self.key_to_list = lambda k,l : self.key_to_list(k[1:],l+[int(k[0])]) if len(k)!=0 else l
         
     def read(self,path):
         file = open(path,"r")
@@ -79,16 +86,16 @@ class CosyIO:
     def write(self,path):
         ''' Comments for later '''
         f = open(path,"w")
-        f.write(f"L    {self.L:.16E}\n")
-        f.write(f"P ({self.P[0]:.16E}, {self.P[1]:.16E}, {self.P[2]:.16E})\n")
-        f.write(f"A ({self.A[0]:.16E}, {self.A[1]:.16E}, {self.A[2]:.16E})\n")
+        f.write(f" L    {self.L:.16E}\n")
+        f.write(f" P ({self.P[0]:.16E}, {self.P[1]:.16E}, {self.P[2]:.16E})\n")
+        f.write(f" A ({self.A[0]:.16E}, {self.A[1]:.16E}, {self.A[2]:.16E})\n")
         for i in range(len(self.matrices)):
             f.write(self.header)
-            cc = 1
+            cc = 0
             for j in range(len(self.matrices[i])):
                 if self.matrices[i][j] != 0:
-                    powers = key_to_list(self.inverse[cc],[])
-                    line = f"   {cc:3d}  {self.matrices[i][j]:20.16E}  "
+                    powers = self.key_to_list(self.inverse[cc],[])
+                    line = f"   {cc+1:3d}  {self.matrices[i][j]:20.16E}  "
                     line += f"{np.sum(powers):2d} "
                     for value in powers:
                         line += f"{value:1d} "

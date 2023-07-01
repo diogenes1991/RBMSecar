@@ -36,3 +36,10 @@ class CosyMagnet(Emulator):
         ''' Emulator build '''
         self.cutoff = kwargs["cutoff"]
         super().__init__(scales,matrix,self.cutoff)
+        
+    def write(self,value,path):
+        rval     = self(value)
+        matrices = [ rval[i:i+len(self.cosyIO.lookup.keys())] for i in range(self.cosyIO.nLetters) ]
+        self.cosyIO.matrices = matrices
+        self.cosyIO.write(path)
+        
