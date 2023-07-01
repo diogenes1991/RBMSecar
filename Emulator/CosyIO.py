@@ -1,8 +1,6 @@
 from itertools import combinations_with_replacement
 import numpy as np
 
-''' THIS FILE IS DEPRECATED '''
-
 def generate_lookup(**kwargs):
     
     low_pow = kwargs["lowPower"]
@@ -26,13 +24,16 @@ def generate_lookup(**kwargs):
     
     return lookup
 
-class CosyMatrix:    
-    def __init__(self,path,nLetters=8,lowPower=0,highPower=4):
+
+class CosyIO:
+    
+    def __init__(self,nLetters=8,lowPower=0,highPower=4):
         
         ''' We generate a static lookup table to synchronize all matrices '''
         self.lookup = generate_lookup(lowPower=lowPower,highPower=highPower,nLetters=nLetters)
         self.inverse  = dict( [(self.lookup[key],key) for key in self.lookup] )
         
+    def read(self,path):
         file = open(path,"r")
         self.matrices = []
         local_mat = np.zeros(len(self.lookup.keys()))
@@ -41,12 +42,25 @@ class CosyMatrix:
             count += 1
             vec = line.split()
             
-            ''' Skip specification lines '''
-            if vec[0] == "L" or vec[0] == "P" or vec[0] == "A" or vec[0] == "I":
+            ''' Save specifications '''
+            if vec[0] == "L":
+                self.L = float(vec[1])
+                continue
+            if vec[0] == "P":
+                self.P = [float(v[:-1]) for v in vec[2:]]
+                continue
+            if vec[0] == "A":
+                self.A = [float(v[:-1]) for v in vec[2:]]
+                continue
+                
+            ''' Skip Matrix header '''
+            if vec[0] == "I":
+                self.header = line
                 continue
             
             ''' Append at the end of matrix character '''
             if vec[0][0] == "-":
+                self.footer = line
                 self.matrices.append(local_mat)
                 local_mat = np.zeros(len(self.lookup.keys()))
             
@@ -61,3 +75,25 @@ class CosyMatrix:
                 except:
                     print(word,count)
         file.close()
+        
+    def write(self,path):
+        ''' Comments for later '''
+        f = open(path,"w")
+        f.write(f"L    {self.L:.16E}\n")
+        f.write(f"P ({self.P[0]:.16E}, {self.P[1]:.16E}, {self.P[2]:.16E})\n")
+        f.write(f"A ({self.A[0]:.16E}, {self.A[1]:.16E}, {self.A[2]:.16E})\n")
+        for i in range(len(self.matrices)):
+            f.write(self.header)
+            cc = 1
+            for j in range(len(self.matrices[i])):
+                if self.matrices[i][j] != 0:
+                    powers = key_to_list(self.inverse[cc],[])
+                    line = f"   {cc:3d}  {self.matrices[i][j]:20.16E}  "
+                    line += f"{np.sum(powers):2d} "
+                    for value in powers:
+                        line += f"{value:1d} "
+                    cc+=1
+                    f.write(line)
+                    f.write("\n")
+            f.write(self.footer)
+        f.close()

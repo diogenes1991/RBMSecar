@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from Emulator import Emulator
-from CosyMatrix import CosyMatrix
+from CosyIO import CosyIO
 
 class CosyMagnet(Emulator):
     
@@ -16,10 +16,18 @@ class CosyMagnet(Emulator):
         
         ''' Format the flattened data matrix, file = row '''
         matrix = []
+        
+        self.cosyIO = CosyIO()
         for i in range(len(self.data)):
-            M = CosyMatrix(os.path.join(self.path,self.data[i]))
+            ''' 
+                Here we should save the magnet specs and complain if 
+                some magnets do not have the same specs
+            '''
+            self.cosyIO.read(os.path.join(self.path,self.data[i]))
+            
+            ''' Flatten the matrices '''
             big_row = []
-            for mat in M.matrices:
+            for mat in self.cosyIO.matrices:
                 for row in mat:
                     big_row.append(row)
             matrix.append(big_row)
