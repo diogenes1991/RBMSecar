@@ -2,8 +2,9 @@ import os
 import numpy as np
 from Emulator import Emulator
 from CosyIO import CosyIO
+from NonRedundant import NonRedundant
 
-class CosyMagnet(Emulator):
+class CosyMagnet(NonRedundant):
     
     ''' Wrapped emulator for the Cosy format '''
     
@@ -39,7 +40,8 @@ class CosyMagnet(Emulator):
         
     def write(self,value,path):
         rval     = self(value)
-        matrices = [ rval[i:i+len(self.cosyIO.lookup.keys())] for i in range(self.cosyIO.nLetters) ]
+        mat_len  = len(self.cosyIO.lookup.keys())
+        matrices = [ rval[mat_len*i:i+mat_len] for i in range(self.cosyIO.nLetters) ]
         self.cosyIO.matrices = matrices
         self.cosyIO.write(path)
         
