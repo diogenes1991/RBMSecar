@@ -37,7 +37,7 @@ class CosyMagnet(NonRedundant):
         ''' Emulator build '''
         self.cutoff = kwargs["cutoff"]
         super().__init__(scales,matrix,self.cutoff)
-        
+    
     def write(self,value,path):
         rval     = self(value)
         mat_len  = len(self.cosyIO.lookup.keys())
