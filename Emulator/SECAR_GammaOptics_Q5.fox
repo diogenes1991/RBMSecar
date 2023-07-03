@@ -360,7 +360,7 @@ ENDIF; {MISALIGN=1 condition}
 DL 0.351643/2;                                               {DL8_1}
 
 { ****** Print Matrix Q3: DL7_2 + Q3 + DL8_1 ****** }
-WMI;}
+WMI;
 {UM;}
 
 DL 0.351643/2;                                               {DL8_2}
