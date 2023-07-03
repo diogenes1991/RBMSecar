@@ -17,7 +17,7 @@ import time
 #============================================ MAGNET INPUT ====================================================
 #==============================================================================================================
 
-n = 1
+n = 100
 magnets = np.linspace(1.0-0.5, (1.0+0.5-1/n), n)
 magnets_names = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'B1', 'B2', 'S1']
 # print(magnets)
@@ -74,34 +74,34 @@ if __name__ == '__main__':
 
 	print('Start running')
 
-	# Print Matrix elements for the magnets in magnet_names list and for scaling factors in magnets list.
-	for i in range(len(magnets_names)):
-		if magnets_names[i]== 'B1' or magnets_names[i]== 'B2':
-			start_time = time.time()
-			cosy.COSYSingleRun([1.0], magnets_names, 0, i)
-			mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'Results/' + magnets_names[i] + '_' + str(1.0))
-			subprocess.call(mv_cmd, shell=True)
-			print(i, "--- %s seconds ---" % (time.time() - start_time))
-		else:
-			for j in range(len(magnets)):
-				start_time = time.time()
-				cosy.COSYSingleRun(magnets, magnets_names, j, i)
-				mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'Results/' + magnets_names[i] + '_' + str(magnets[j]))
-				subprocess.call(mv_cmd, shell=True)
-				print(i, "--- %s seconds ---" % (time.time() - start_time))
+	## Print Matrix elements for the magnets in magnet_names list and for scaling factors in magnets list.
+	# for i in range(len(magnets_names)):
+	# 	if magnets_names[i]== 'B1' or magnets_names[i]== 'B2':
+	# 		start_time = time.time()
+	# 		cosy.COSYSingleRun([1.0], magnets_names, 0, i)
+	# 		mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'Results/{}_{:.2f}'.format(magnets_names[i], 1.0))
+	# 		subprocess.call(mv_cmd, shell=True)
+	# 		print(i, "--- %s seconds ---" % (time.time() - start_time))
+	# 	else:
+	# 		for j in range(len(magnets)):
+	# 			start_time = time.time()
+	# 			cosy.COSYSingleRun(magnets, magnets_names, j, i)
+	# 			mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'Results/{}_{:.2f}'.format(magnets_names[i], magnets[j]))
+	# 			subprocess.call(mv_cmd, shell=True)
+	# 			print(i, "--- %s seconds ---" % (time.time() - start_time))
 
-	# x, ax, y, ay, dL, dE, dM, dZ
+	## x, ax, y, ay, dL, dE, dM, dZ
 	beam_in = generateInitialDistribution(widthX, widthY, aX, aY)
 	ax_in = beam_in.transpose()[3]
 	plt.hist(ax_in, color='blue', bins=np.linspace(-5e-2, 5e-2, 500))
 
-	test_scale = 0.5626
-	cosy.COSYSingleRun([test_scale], ['Q1'], 0, 0) # args = magnet scale values array, magnet name array, index in magent scale array, index in magnet name array
-	mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'test_map0.txt')
-	subprocess.call(mv_cmd, shell=True)
-	beam_out = cosy.transportTotal(beam_in, 'test_map0.txt') # args = input beam distribution array, transport map file name
-	ax_out = beam_out.transpose()[3]
-	plt.hist(ax_out, color='k', bins=np.linspace(-5e-2, 5e-2, 500), alpha=0.5)
+	# test_scale = 0.5626
+	# cosy.COSYSingleRun([test_scale], ['Q1'], 0, 0) # args = magnet scale values array, magnet name array, index in magent scale array, index in magnet name array
+	# mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'test_map0.txt')
+	# subprocess.call(mv_cmd, shell=True)
+	# beam_out = cosy.transportTotal(beam_in, 'test_map0.txt') # args = input beam distribution array, transport map file name
+	# ax_out = beam_out.transpose()[3]
+	# plt.hist(ax_out, color='k', bins=np.linspace(-5e-2, 5e-2, 500), alpha=0.5)
 
 	beam_out = cosy.transportTotal(beam_in, '0.5626')  # args = input beam distribution array, transport map file name
 	ax_out = beam_out.transpose()[3]

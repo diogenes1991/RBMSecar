@@ -61,15 +61,15 @@ def COSYSingleRun(magnets, magnet_names, i=0, j=0):
 
 	elif magnet_names[j]=='Q4':
 		replace_line(cosyfileTemp, cosyfileTemp, 373-1, \
-		'M5 0.3467 Q4*SC' + str(magnets[i]) + ' 0 0 0 0 0.08;                           {Q4}')
+		'M5 0.3467 Q4*SC*' + str(magnets[i]) + ' 0 0 0 0 0.08;                           {Q4}')
 
 	elif magnet_names[j]=='Q5':
 		replace_line(cosyfileTemp, cosyfileTemp, 393-1, \
-		'MQ 0.3466 Q5*SC' + str(magnets[i]) + ' 0.06;                                   {Q5}')
+		'MQ 0.3466 Q5*SC*' + str(magnets[i]) + ' 0.06;                                   {Q5}')
 
 	elif magnet_names[j]=='S1':
 		replace_line(cosyfileTemp, cosyfileTemp, 333-1, \
-		'MH 0.26 H1*SC' + str(magnets[i]) + ' 0.11;                                   {HEX1}')
+		'MH 0.26 H1*SC*' + str(magnets[i]) + ' 0.11;                                   {HEX1}')
 
 
 	#mkDir_cmd = 'mkdir "%s"' % (str(i))
