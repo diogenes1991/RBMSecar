@@ -2,16 +2,18 @@
 
 import subprocess
 from os.path import exists
+import multiprocessing
 import numpy as np
 
 #Set the path to COSY executable
-pathToCOSY='/Users/ruchigarg/Desktop/Codes/COSY/cosy'
+pathToCOSY='/Users/fernandomontes/Research/COSY/cosy'
 
 #Name of original COSY file
-cosyfilebase = 'SECAR_GammaOptics_' #the file you will execute
+cosyfile = 'SECAR_GammaOptics.fox' #the file you will execute
 
 #Name of COSY output file
 cosyoutput = 'output'
+
 
 # Function to replace of text in a file
 def replace_line(file_nameOrig, file_nameTemp, line_num, text):
@@ -36,47 +38,49 @@ def add_lines(file_nameOrig, file_nameTemp, line_num, text):
 	out.close()
 
 # Function that uses COSY to generate matrices in a folder
-def COSYSingleRun(magnets, magnet_names, i=0, j=0):
+def COSYSingleRun(magnets, i = 0, FP = 'FP1No'):
 
 	#Name of temp COSY file
-	cosyfileTemp = 'SECAR_GammaOpticsTEMP' + ".fox"
+	cosyfileTemp = 'SECAR_GammaOpticsTEMP' + str(i) + ".fox"
 	print("Running COSY i = ", i)
 
-	cosyfile = cosyfilebase + magnet_names[j] + '.fox'
-
-	replace_line(cosyfile, cosyfileTemp, 0, "INCLUDE '/Users/ruchigarg/Desktop/Codes/COSY/cosy';\n")
-
-	if magnet_names[j]=='Q1':
-		replace_line(cosyfileTemp, cosyfileTemp, 248-1, \
+	replace_line(cosyfile, cosyfileTemp, 0, "INCLUDE '../../COSY';\n")
+	replace_line(cosyfileTemp, cosyfileTemp, 248, \
 		'M5 0.250 Q1*SC*' + str(magnets[i]) + ' Q1H*SC*' + str(magnets[i]) + ' 0 -0.00318*Q1*SC*' + \
 			str(magnets[i]) + ' 0 0.055;        {Q1+Hex}\n')
-		 
-	elif magnet_names[j]=='Q2':
-		replace_line(cosyfileTemp, cosyfileTemp, 268-1, \
-		'MQ 0.2979 Q2*SC*1.0*' + str(magnets[i]) + ' 0.068;                   			{Q2}\n')
-
-	elif magnet_names[j]=='Q3':
-		replace_line(cosyfileTemp, cosyfileTemp, 353-1, \
-		'MQ 0.3499 Q3*SC*' + str(magnets[i]) + ' 0.11;                                    {Q3}')
-
-	elif magnet_names[j]=='Q4':
-		replace_line(cosyfileTemp, cosyfileTemp, 373-1, \
-		'M5 0.3467 Q4*SC' + str(magnets[i]) + ' 0 0 0 0 0.08;                           {Q4}')
-
-	elif magnet_names[j]=='Q5':
-		replace_line(cosyfileTemp, cosyfileTemp, 393-1, \
-		'MQ 0.3466 Q5*SC' + str(magnets[i]) + ' 0.06;                                   {Q5}')
-
-	elif magnet_names[j]=='S1':
-		replace_line(cosyfileTemp, cosyfileTemp, 333-1, \
-		'MH 0.26 H1*SC' + str(magnets[i]) + ' 0.11;                                   {HEX1}')
-
 
 	#mkDir_cmd = 'mkdir "%s"' % (str(i))
 	#subprocess.call(mkDir_cmd, shell=True)
 	temp = open('temp.txt', "w") # temporary file for writing COSY terminal output
 	subprocess.call([pathToCOSY, cosyfileTemp], stdout=temp)
+	mv_cmd = 'mv "%s" "%s"' % ("fort.50",  'Results/' + str(magnets[i]))
+	subprocess.call(mv_cmd, shell=True)
 	temp.close()
+
+# Parallelization of COSY runs for the different magnet settings
+def COSYParallelRun(magnets, FP):
+	try:
+		pool = multiprocessing.Pool()  # Take as many processes as possible
+	except:
+		for c in multiprocessing.active_children():
+			os.kill(c.pid, signal.SIGKILL)
+		pool = multiprocessing.Pool(4)  # Number of processes to be used
+	for i in range(len(magnets)):
+		pool.apply_async( COSYSingleRun, [magnets, i] )
+	pool.close()
+	pool.join()
+
+def generateMatrices(magnets, FP):
+	COSYParallelRun(magnets, FP)
+
+
+
+
+
+
+
+
+
 
 #####################
 
@@ -145,7 +149,13 @@ def transport(x0, map_coeff, map_power):
 	return x
 
 # Performs beam transport to end given a beam array
-def transportTotal(x0, mapfile):
-	coeff_array, power_array = read_map(mapfile)  # DL1
+def transportTotal(x0, i, coeff):
+	coeff_array, power_array = read_map(str(i) + '/fort.50')  # DL1
 	x1 = transport(x0, coeff_array, power_array)
-	return (x1)
+	coeff_array, power_array = read_map(str(i) + '/fort.51')  # Q1
+	for c in coeff:  # Modifying transport matrix element by element
+		coeff_array[c[0]][c[1]] = c[2]
+	x2 = transport(x1, coeff_array, power_array)
+	coeff_array, power_array = read_map(str(i) + '/fort.52')  # toFP1
+	x3 = transport(x2, coeff_array, power_array)
+	return (x3)
