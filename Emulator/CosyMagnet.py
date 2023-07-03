@@ -41,7 +41,7 @@ class CosyMagnet(NonRedundant):
     def write(self,value,path):
         rval     = self(value)
         mat_len  = len(self.cosyIO.lookup.keys())
-        matrices = [ rval[mat_len*i:i+mat_len] for i in range(self.cosyIO.nLetters) ]
+        matrices = [ rval[mat_len*i:mat_len*(i+1)] for i in range(self.cosyIO.nLetters) ]
         self.cosyIO.matrices = matrices
         self.cosyIO.write(path)
         

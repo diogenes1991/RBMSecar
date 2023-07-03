@@ -86,15 +86,25 @@ class CosyIO:
     def write(self,path):
         ''' Comments for later '''
         f = open(path,"w")
+        
+        ''' Write the specifications at the top '''
         f.write(f" L    {self.L:.16E}\n")
         f.write(f" P ({self.P[0]:.16E}, {self.P[1]:.16E}, {self.P[2]:.16E})\n")
         f.write(f" A ({self.A[0]:.16E}, {self.A[1]:.16E}, {self.A[2]:.16E})\n")
+        
+        ''' Write each cosy matrix '''
         for i in range(len(self.matrices)):
             f.write(self.header)
             cc = 0
             for j in range(len(self.matrices[i])):
+                
+                ''' The cosy standard is to only write non zero matrix elements '''
                 if self.matrices[i][j] != 0:
-                    powers = self.key_to_list(self.inverse[cc],[])
+                    
+                    ''' Lookup the powers for this index '''
+                    powers = self.key_to_list(self.inverse[j],[])
+                    
+                    ''' Mimic Fortran formatted output '''
                     line = f"   {cc+1:3d}  {self.matrices[i][j]:20.16E}  "
                     line += f"{np.sum(powers):2d} "
                     for value in powers:
