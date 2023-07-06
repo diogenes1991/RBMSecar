@@ -7,10 +7,8 @@ class SECAR:
     
     def __init__(self,**kwargs):
         ''' This assumes that the magnets are to be evaluated sequentially '''
-        self.magnets_paths = kwargs["paths"]
-        self.cutoff        = kwargs["cutoff"]
-        self.magnets       = [ SECARMagnet(path=path,cutoff=self.cutoff) for path in self.magnets_paths ]
-        self.nMagnets      = len(self.magnets)
+        self.magnets  = kwargs["magnets"]
+        self.nMagnets = len(self.magnets)
         
     ''' Based on Ruchi's Main.py '''
     def transport(self,x0,map_coeff,map_power):
