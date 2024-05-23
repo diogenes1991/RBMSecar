@@ -13,6 +13,7 @@ class CosyMagnet(NonRedundant):
         ''' Load all the datafile names and assume the scale is the name  '''
         self.path   = kwargs["path"]
         self.data   = os.listdir(self.path)
+        self.data.sort()
         scales      = [ float(name) for name in self.data ]
         
         ''' Format the flattened data matrix, file = row '''
